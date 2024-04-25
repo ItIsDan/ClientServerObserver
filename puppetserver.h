@@ -4,20 +4,26 @@
 #include <QWidget>
 #include <QLabel>
 #include <QVector>
+#include "IServer.h"
 
-class PuppetServer : public QWidget
+class PuppetServer : public IServer
 {
     Q_OBJECT
 
 public:
-    explicit PuppetServer(QWidget *parent = nullptr);
-    void start(int maxRuns = 2);
+    explicit PuppetServer();
+    void start(int maxRuns);
     bool startRunning();
     bool stopRunning();
+    void attach(IObserver *observer) noexcept override;
+    void detach(IObserver *observer) noexcept override;
+    void notify(bool canConnect) noexcept override;
+
     virtual ~PuppetServer();
 
 private:
-    QLabel *maxRuns;
+    QVector<IObserver *> _observers;
+    QLabel *maxRunsLabel;
     QLabel *currentRuns;
     int _maxRuns { 2 };
     int _currentRunsCount { 0 };

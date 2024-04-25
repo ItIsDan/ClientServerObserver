@@ -2,21 +2,36 @@
 #define PUPPETCLIENT_H
 
 #include <QWidget>
-#include "puppetserver.h"
 #include <QLabel>
+#include <QCheckBox>
 
-class PuppetClient : public QWidget
+#include "IObserver.h"
+#include "IServer.h"
+
+enum Status
+{
+    DISCONNECTED,
+    CONNECTED,
+    PENDING,
+    RUNNING,
+    ERROR
+};
+
+class PuppetClient : public IObserver
 {
     Q_OBJECT
 public:
     PuppetClient();
 
-    void setServer(PuppetServer *server);
-    PuppetServer *_server;
-    bool _running { false };
+    void setServer(IServer *server);
+    void updateEvent(bool canConnect) override;
 
 private:
-    QLabel *_status;
+    bool _runningRequest { false };
+    IServer *_server;
+    Status _status;
+    QLabel *_statusLabel;
+    QCheckBox *_run;
 
 signals:
     void disconnectRequest();

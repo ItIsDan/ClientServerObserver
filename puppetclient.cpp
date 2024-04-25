@@ -1,7 +1,5 @@
 #include "puppetclient.h"
 #include <QBoxLayout>
-#include <QCheckBox>
-#include <QTimer>
 #include <QDebug>
 
 PuppetClient::PuppetClient()
@@ -12,49 +10,71 @@ PuppetClient::PuppetClient()
     auto layout = new QGridLayout(widget);
     setLayout(layout);
 
-    auto timer = new QTimer();
     auto connectCheckBox = new QCheckBox("Connect");
-    auto run = new QCheckBox("Run");
-    _status = new QLabel("Disconnected!");
+    _run = new QCheckBox("Run");
+    _statusLabel = new QLabel("Disconnected!");
+    _status = DISCONNECTED;
 
-    timer->setInterval(250);
-    run->setEnabled(false);
-    connect(connectCheckBox, &QCheckBox::toggled, this, [this, run](auto checked) {
-        run->setEnabled(checked);
-        if (!checked)
-            run->setChecked(false);
+    _run->setEnabled(false);
+    connect(connectCheckBox, &QCheckBox::toggled, this, [this](auto checked) {
+        _run->setEnabled(checked);
+        if (!checked) {
+            _run->setChecked(false);
+        }
         emit connectRequest(checked);
     });
-    connect(run, &QCheckBox::toggled, this, [this, timer](auto checked) {
+    connect(_run, &QCheckBox::toggled, this, [this](auto checked) {
         if (checked) {
-            timer->start();
-            _status->setText("Starting run...");
-        } else {
-            timer->stop();
-            _status->setText("Connected!");
-            if (_running) {
-                _server->stopRunning();
+            if (_runningRequest = _server->startRunning()) {
+                _statusLabel->setText("Running!");
+                _status = RUNNING;
+            } else {
+                _statusLabel->setText("<b>Pending!</b>");
+                _status = PENDING;
             }
-        }
-    });
-
-    connect(timer, &QTimer::timeout, this, [this, timer] {
-        if (_server) {
-            qInfo() << "ping as" << windowTitle();
-            if (_running = _server->startRunning()) {
-                _status->setText("Running!");
-                timer->stop();
+        } else {
+            if (_status != PENDING) {
+                _runningRequest = !_server->stopRunning();
+                _statusLabel->setText("Connected!");
+                _status = CONNECTED;
+            } else {
+                _statusLabel->setText("Connected!");
+                _status = CONNECTED;
             }
         }
     });
 
     layout->addWidget(connectCheckBox);
-    layout->addWidget(run);
-    layout->addWidget(_status);
+    layout->addWidget(_run);
+    layout->addWidget(_statusLabel);
 }
 
-void PuppetClient::setServer(PuppetServer *server)
+void PuppetClient::setServer(IServer *server)
 {
-    !server ? _status->setText("Disconnected!") : _status->setText("Connected!");
+    if (!server) {
+        _statusLabel->setText("<b>Disconnected!</b>");
+        _status = DISCONNECTED;
+    } else {
+        _statusLabel->setText("Connected!");
+        _status = CONNECTED;
+    }
     _server = server;
+}
+
+void PuppetClient::updateEvent(bool canConnect)
+{
+    if (!canConnect) {
+        return;
+    }
+
+    if (!_run->isChecked()) {
+        _statusLabel->setText("IDC");
+        return;
+    }
+
+    if (_status == PENDING) {
+        _server->startRunning();
+        _statusLabel->setText("Running!");
+        _status = RUNNING;
+    }
 }

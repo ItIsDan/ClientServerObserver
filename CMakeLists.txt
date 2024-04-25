@@ -18,6 +18,8 @@ set(PROJECT_SOURCES
         puppetserver.h
         puppetclient.cpp
         puppetclient.h
+        IObserver.h
+        IServer.h
     )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

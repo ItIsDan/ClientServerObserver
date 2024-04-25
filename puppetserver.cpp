@@ -1,8 +1,9 @@
 #include "puppetserver.h"
 #include <QVBoxLayout>
 #include <QCheckBox>
+#include <QDebug>
 
-PuppetServer::PuppetServer(QWidget *parent) : QWidget(parent)
+PuppetServer::PuppetServer()
 {
     setFixedSize(250, 100);
     show();
@@ -10,12 +11,12 @@ PuppetServer::PuppetServer(QWidget *parent) : QWidget(parent)
     auto widget = new QWidget();
     auto layout = new QGridLayout(widget);
     auto maxSizeLabel = new QLabel("Max Runs: ");
-    maxRuns = new QLabel(QString::number(_maxRuns));
+    maxRunsLabel = new QLabel(QString::number(_maxRuns));
     auto currentSizeLabel = new QLabel("Current Runs Count: ");
     currentRuns = new QLabel(QString::number(_currentRunsCount));
 
     layout->addWidget(maxSizeLabel);
-    layout->addWidget(maxRuns);
+    layout->addWidget(maxRunsLabel);
     layout->addWidget(currentSizeLabel);
     layout->addWidget(currentRuns);
 
@@ -25,6 +26,7 @@ PuppetServer::PuppetServer(QWidget *parent) : QWidget(parent)
 void PuppetServer::start(int maxRuns)
 {
     _maxRuns = maxRuns;
+    maxRunsLabel->setText(QString::number(_maxRuns));
 }
 
 bool PuppetServer::startRunning()
@@ -37,19 +39,44 @@ bool PuppetServer::startRunning()
 
     currentRuns->setText(QString::number(_currentRunsCount));
 
+    //    notify(_currentRunsCount < _maxRuns);
+
     return true;
 }
 
 bool PuppetServer::stopRunning()
 {
     if (_currentRunsCount <= 0)
-        return false;
+        return true;
 
     --_currentRunsCount;
 
     currentRuns->setText(QString::number(_currentRunsCount));
 
-    return true;
+    notify(_currentRunsCount < _maxRuns);
+
+    return false;
+}
+
+void PuppetServer::attach(IObserver *observer) noexcept
+{
+    for (auto &obs : _observers)
+        if (obs == observer)
+            return;
+
+    _observers.push_back(observer);
+}
+
+void PuppetServer::detach(IObserver *observer) noexcept
+{
+    _observers.removeOne(observer);
+}
+
+void PuppetServer::notify(bool canConnect) noexcept
+{
+    for (auto &obs : _observers) {
+        obs->updateEvent(canConnect);
+    }
 }
 
 PuppetServer::~PuppetServer()
