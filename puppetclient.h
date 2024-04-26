@@ -23,8 +23,8 @@ class PuppetClient : public IObserver
 public:
     PuppetClient();
 
-    void setServer(IServer *server);
-    void updateEvent(bool canConnect) override;
+    void setServer(IServer *server) override;
+    void updateEvent(bool canRun) override;
 
 private:
     bool _runningRequest { false };
@@ -35,7 +35,6 @@ private:
 
 signals:
     void disconnectRequest();
-    void connectRequest(bool);
 };
 
 #endif // PUPPETCLIENT_H

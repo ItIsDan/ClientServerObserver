@@ -72,10 +72,10 @@ void PuppetServer::detach(IObserver *observer) noexcept
     _observers.removeOne(observer);
 }
 
-void PuppetServer::notify(bool canConnect) noexcept
+void PuppetServer::notify(bool canRun) noexcept
 {
     for (auto &obs : _observers) {
-        obs->updateEvent(canConnect);
+        obs->updateEvent(canRun);
     }
 }
 

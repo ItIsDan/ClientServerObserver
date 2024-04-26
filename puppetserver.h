@@ -17,7 +17,7 @@ public:
     bool stopRunning();
     void attach(IObserver *observer) noexcept override;
     void detach(IObserver *observer) noexcept override;
-    void notify(bool canConnect) noexcept override;
+    void notify(bool canConnect) noexcept;
 
     virtual ~PuppetServer();
 

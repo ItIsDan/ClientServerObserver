@@ -6,11 +6,12 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    auto server = new PuppetServer;
+
+    IServer *server = new PuppetServer;
     server->start(2);
 
     for (auto i = 1; i <= 3; ++i) {
-        auto client = new PuppetClient;
+        IObserver *client = new PuppetClient;
         client->setWindowTitle(QString("Client %1").arg(i));
         QObject::connect(client, &PuppetClient::connectRequest, client,
                          [server, client](auto request) {

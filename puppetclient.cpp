@@ -16,6 +16,7 @@ PuppetClient::PuppetClient()
     _status = DISCONNECTED;
 
     _run->setEnabled(false);
+
     connect(connectCheckBox, &QCheckBox::toggled, this, [this](auto checked) {
         _run->setEnabled(checked);
         if (!checked) {
@@ -23,6 +24,7 @@ PuppetClient::PuppetClient()
         }
         emit connectRequest(checked);
     });
+
     connect(_run, &QCheckBox::toggled, this, [this](auto checked) {
         if (checked) {
             if (_runningRequest = _server->startRunning()) {
@@ -61,9 +63,9 @@ void PuppetClient::setServer(IServer *server)
     _server = server;
 }
 
-void PuppetClient::updateEvent(bool canConnect)
+void PuppetClient::updateEvent(bool canRun)
 {
-    if (!canConnect) {
+    if (!canRun) {
         return;
     }
 
