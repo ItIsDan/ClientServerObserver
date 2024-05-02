@@ -39,8 +39,6 @@ bool PuppetServer::startRunning()
 
     currentRuns->setText(QString::number(_currentRunsCount));
 
-    //    notify(_currentRunsCount < _maxRuns);
-
     return true;
 }
 
